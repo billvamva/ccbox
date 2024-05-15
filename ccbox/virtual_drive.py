@@ -123,7 +123,7 @@ class Virtual_Drive(FileSystemObject):
         def lock(self) -> None:
                 self.locked = True
 
-        def add_save_callable_attr(curr_user: "User", _save_method: Callable) -> None:
+        def add_save_callable_attr(self, curr_user: "User", _save_method: Callable) -> None:
                 self.user_obj = curr_user
                 self._save_method = _save_method
         
