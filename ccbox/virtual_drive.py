@@ -26,6 +26,17 @@ class FileSystemObject:
         
         def add_file(self, obj: object) -> None:
                 self.contents.append(obj)
+        
+        def change_directory(self, folder_name):
+                if folder_name in curr_directory.folders:
+                        curr_directory = curr_directory.folders.get(folder_name)
+                elif folder_name == "..":
+                        try:
+                                curr_directory = curr_directory.parent_dir
+                        except:
+                                print("In root directory.")
+                else: 
+                        print("Invalid Folder name.")
 
         def mount_directory(self, dir_path:str):
                 try: 
@@ -87,12 +98,15 @@ class Virtual_Drive(FileSystemObject):
         virtual_drive_id: int =  field(default_factory=lambda: next(Virtual_Drive.id_counter))
         locked: bool = field(default=True)
         _from_dict: bool = False
+        user_obj: "User" = None
+        _save_method: Callable = None
 
         def __post_init__(self):
                 if not self._from_dict:
                         default_folder = Folder(name="default", parent_dir=self)
                         self.folders['default'] = default_folder 
                         self.contents.append(default_folder)
+        
         
         def show_contents(self) -> None:
                 print(f"dir:{self.name}")
@@ -108,9 +122,13 @@ class Virtual_Drive(FileSystemObject):
         
         def lock(self) -> None:
                 self.locked = True
+
+        def add_save_callable_attr(curr_user: "User", _save_method: Callable) -> None:
+                self.user_obj = curr_user
+                self._save_method = _save_method
         
-        def _save(self, _save_method: Callable, user_obj: "User"):
-                _save_method(user_obj)
+        def _save(self):
+                self._save_method(self.user_obj)
         
         def to_dict(self) -> dict:
                 return {
@@ -119,45 +137,8 @@ class Virtual_Drive(FileSystemObject):
                 "folders": {name: f.to_dict() for name, f in self.folders.items()},
                 "contents": [f.to_dict() if isinstance(f, Folder) else str(f) for f in self.contents],
                 }
-
+        
         def __repr__(self):
                 return f'Virtual Drive(\'{self.virtual_drive_id}\', {self.folders})'
-
-        def drive_main(self, curr_user: "User", _save:Callable) -> None:
-                curr_directory = self
-                while not self.locked:
-                        print("\n1. View Directory\n2. Change directory\n3. Add directory\n4. Mount Directory \n5. Exit \n")
-                        choice = input("Enter your choice: ")
-                        if choice == "1":
-                                curr_directory.show_contents()
-                        elif choice == "2":
-                                folder_name = input("Enter folder name: ")
-                                if folder_name in curr_directory.folders:
-                                        curr_directory = curr_directory.folders.get(folder_name)
-                                elif folder_name == "..":
-                                        try:
-                                                curr_directory = curr_directory.parent_dir
-                                        except:
-                                                print("In root directory.")
-                                else: 
-                                        print("Invalid Folder name.")
-                        elif choice == "3":
-                                folder_name = input("Enter folder name: ")
-                                curr_directory.add_folder(folder_name)
-                                self._save(_save_method=_save,user_obj=curr_user)
-                        elif choice == "4":
-                                dir_path = input("Enter local directory path: ")
-                                curr_directory.mount_directory(dir_path)
-                                self._save(_save_method=_save,user_obj=curr_user)
-                        elif choice == "5":
-                                self.lock()
-                                break
-                        else:
-                                print("Invalid choice.")
-        
-
-
-
-                
 
 

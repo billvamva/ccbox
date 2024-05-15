@@ -37,7 +37,6 @@ class User:
 
 class UserDatabase:
         """Class for interacting with the user database"""
-
         
         def __init__(self, db_path: str):
                 self.db_path = db_path

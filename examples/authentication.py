@@ -1,4 +1,4 @@
-from authentication import Authentication
+from ccbox.authentication import Authentication
 
 if __name__ == "__main__":
         auth = Authentication()
