@@ -31,12 +31,13 @@ class FileSystemObject:
                 self.contents.append(obj)
         
         def change_directory(self, folder_name) -> "FileSystemObject":
-                if folder_name in curr_directory.folders:
-                        curr_directory = curr_directory.folders.get(folder_name)
+                curr_directory = None
+                if folder_name in self.folders:
+                        curr_directory = self.folders.get(folder_name)
                         return curr_directory
                 elif folder_name == "..":
                         try:
-                                curr_directory = curr_directory.parent_dir
+                                curr_directory = self.parent_dir
                                 return curr_directory
                         except:
                                 print("In root directory.")
@@ -54,8 +55,7 @@ class FileSystemObject:
 
                 for item in dir_list:
                         if os.path.isdir(dir_path + "/" + item):
-                                new_folder = mount_folder.add_folder(item)
-                                new_folder.mount_directory(dir_path + "/" + item)
+                                mount_folder.mount_directory(dir_path + "/" + item)
                         elif os.path.isfile(dir_path + "/" + item):
                                 with open(dir_path + "/" + item) as new_file:
                                         new_file = NamedTextIOWrapper(new_file, item)
@@ -143,7 +143,6 @@ class Virtual_Drive(FileSystemObject):
 
         def upload_folder(self, folder: Folder, container_name: str, parent_name: Optional[str] = None) -> None:
                 # Create a blob for the folder and upload its contents recursively
-                print(f'folder name: {folder._name} parent: {parent_name}')
                 if parent_name:
                         folder_path = f"{parent_name}/{folder._name}"
                 else:

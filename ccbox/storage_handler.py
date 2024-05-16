@@ -7,7 +7,6 @@ from azure.storage.blob import BlobServiceClient
 from azure.identity import DefaultAzureCredential
 
 
-
 class StorageHandler(ABC):
     
         @abstractmethod

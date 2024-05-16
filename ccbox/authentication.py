@@ -109,7 +109,6 @@ class Authentication:
 
                 authenticated_user = cls.user_database.get_user_from_db(username)
                 print("Login successful.\n")
-                authenticated_user.virtual_drive.unlock()
                 authenticated_user.virtual_drive.add_save_callable_attr(curr_user=authenticated_user, _save_method=cls.user_database.update_virtual_drive_in_db)
                 return authenticated_user
                 

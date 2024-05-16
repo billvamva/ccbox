@@ -11,6 +11,9 @@ if __name__ == "__main__":
         
         vd.add_remote(azure_storage)
         vd.mount_directory("../data/mnt")
-        vd.show_contents()
+        current_folder = vd.change_directory("mnt")
+        current_folder.show_contents()
+        current_folder = current_folder.change_directory("subfolder")
+        current_folder.show_contents()
         vd.upload_contents()
         # vd.load_from_remote('virtual_drive_1.json')  # Load from Azure Storage
