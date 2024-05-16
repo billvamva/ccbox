@@ -6,7 +6,7 @@ from itertools import count
 import sqlite3
 import json
 
-from virtual_drive import Virtual_Drive, Folder
+from ccbox.virtual_drive import Virtual_Drive, Folder
 
 
 @dataclass

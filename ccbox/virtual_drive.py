@@ -12,7 +12,7 @@ class FileSystemObject:
 
         def add_folder(self, name: str, folder_obj: Optional["Folder"] = None) -> Union["Folder", None]:
                 for item in self.contents:
-                        if type(item).__name__ == Folder:
+                        if type(item).__name__ == "Folder":
                                 if item.name == name:
                                         raise Exception(f"A folder with the name {name} already exists.")
                                         return
@@ -52,8 +52,9 @@ class FileSystemObject:
                                 new_folder = mount_folder.add_folder(item)
                                 new_folder.mount_directory(dir_path + "/" + item)
                         elif os.path.isfile(dir_path + "/" + item):
-                                new_file = open(dir_path + "/" + item)
-                                mount_folder.contents.append(new_file)
+                                with open(dir_path + "/" + item) as new_file:
+                                        new_file.name = item
+                                        mount_folder.contents.append(new_file)
 
         def __repr__(self):
                 return f'FSO(\'{self.name}\', {self.folders}, {self.metadata})'
