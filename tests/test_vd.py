@@ -8,20 +8,13 @@ def virtual_drive():
         return Virtual_Drive()
 
 def test_virtual_drive_initialization(virtual_drive):
-        assert virtual_drive.name == "VD"
-        assert virtual_drive.locked is True
+        assert virtual_drive._name == "VD"
         assert 'default' in virtual_drive.folders
-        assert virtual_drive.folders['default'].name == 'default'
-
-def test_virtual_drive_unlock_lock(virtual_drive):
-        virtual_drive.unlock()
-        assert virtual_drive.locked is False
-        virtual_drive.lock()
-        assert virtual_drive.locked is True
+        assert virtual_drive.folders['default']._name == 'default'
 
 def test_virtual_drive_add_folder(virtual_drive):
         folder = virtual_drive.add_folder("new_folder")
-        assert folder.name == "new_folder"
+        assert folder._name == "new_folder"
         assert folder in virtual_drive.contents
         assert "new_folder" in virtual_drive.folders
 
@@ -54,16 +47,13 @@ def test_virtual_drive_mount_directory(mocker, virtual_drive):
         mount_folder = virtual_drive.folders['test_path']
 
         # Check file and directory names in the contents
-        content_names = [os.path.basename(f.name) if hasattr(f, 'name') else f.name for f in mount_folder.contents]
-        print(content_names)  # Print for debugging
+        content_names = [os.path.basename(f._name) if hasattr(f, '_name') else f._name for f in mount_folder.contents]
         assert 'file1.txt' in content_names
         assert 'dir1' in mount_folder.folders
 
 def test_virtual_drive_to_dict(virtual_drive):
-        virtual_drive.unlock()
         data = virtual_drive.to_dict()
-        assert data['virtual_drive_id'] == virtual_drive.virtual_drive_id
-        assert data['locked'] is False
+        assert data['_id'] == virtual_drive._id
         assert 'default' in data['folders']
 
 def test_virtual_drive_add_save_callable_attr(virtual_drive):

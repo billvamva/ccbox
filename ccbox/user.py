@@ -28,10 +28,10 @@ class User:
         def from_dict(cls, data: dict) -> 'User':
 
                 user = cls(username=data["username"], _id=data["_id"])
-                user.virtual_drive = Virtual_Drive(virtual_drive_id=data["virtual_drive"]["virtual_drive_id"], locked=data["virtual_drive"]["locked"], _from_dict=True)
+                user.virtual_drive = Virtual_Drive(_id=data["virtual_drive"]["_id"],  _from_dict=True)
                 folders = {name: Folder.from_dict(data=f, parent_dir=user.virtual_drive) for name, f in data["virtual_drive"]["folders"].items()}
                 for folder_name, folder_obj in folders.items():
-                       user.virtual_drive.add_folder(name=folder_name, folder_obj=folder_obj)
+                       user.virtual_drive.add_folder(_name=folder_name, folder_obj=folder_obj)
                 return user
 
 
@@ -51,7 +51,7 @@ class UserDatabase:
                 if max_user_id is None:
                         max_user_id = 0
 
-                self.cursor.execute('SELECT MAX(json_extract(virtual_drive, "$.virtual_drive_id")) FROM users')
+                self.cursor.execute('SELECT MAX(json_extract(virtual_drive, "$._id")) FROM users')
                 max_drive_id = self.cursor.fetchone()[0]
                 if max_drive_id is None:
                         max_drive_id = 0
