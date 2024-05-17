@@ -1,7 +1,3 @@
-Sure! Here's a complete README in markdown format using the provided table of contents and the code discussed:
-
----
-
 # Virtual Drive Management System
 
 ## Table of Contents
@@ -78,159 +74,73 @@ virtual_drive.upload_contents()
 
 The web server is implemented using Flask and Tornado. It provides endpoints for user registration, login, and virtual drive management.
 
-#### Flask and Tornado Integration
+#### Running the Web Server
 
-Here's the `web_server.py` implementation:
+1. Ensure you have the `web_server.py` script ready as provided earlier.
 
-```python
-from flask import Flask, request, jsonify
-from tornado.wsgi import WSGIContainer
-from tornado.httpserver import HTTPServer
-from tornado.ioloop import IOLoop
-import threading
-import logging
+2. Start the web server:
+   ```sh
+   python web_server.py
+   ```
 
-from ccbox.virtual_drive import Virtual_Drive, Folder
-from ccbox.user import User, UserDatabase
-from ccbox.authentication import Authentication
-from ccbox.storage_handler import AzureStorageHandler
+3. The server will start on port 5000 by default. You can access the following endpoints:
 
-app = Flask(__name__)
+   - **Register a new user:**
+     ```sh
+     curl -X POST http://localhost:5000/register -H "Content-Type: application/json" -d '{"username":"yourusername","password":"yourpassword"}'
+     ```
 
-# Route for registering a new user
-@app.route('/register', methods=['POST'])
-def register():
-    data = request.get_json()
-    username = data.get('username')
-    password = data.get('password')
-    if not username or not password:
-        return jsonify({'error': 'Username and password are required'}), 400
+   - **Log in a user:**
+     ```sh
+     curl -X POST http://localhost:5000/login -H "Content-Type: application/json" -d '{"username":"yourusername","password":"yourpassword"}'
+     ```
 
-    authenticated_user = Authentication.register(username, password)
-    if authenticated_user:
-        return jsonify({'message': 'User created and logged in successfully'})
-    else:
-        return jsonify({'error': 'Failed to create user'}), 400
+   - **Mount a directory:**
+     ```sh
+     curl -X POST http://localhost:5000/mount -H "Content-Type: application/json" -d '{"username":"yourusername","dir_path":"/path/to/mount"}'
+     ```
 
-# Route for logging in a user
-@app.route('/login', methods=['POST'])
-def login():
-    data = request.get_json()
-    username = data.get('username')
-    password = data.get('password')
-    if not username or not password:
-        return jsonify({'error': 'Username and password are required'}), 400
-
-    authenticated_user = Authentication.login(username, password)
-    if authenticated_user:
-        return jsonify({'message': 'Login successful'})
-    else:
-        return jsonify({'error': 'Incorrect username or password'}), 401
-
-# Route for mounting a directory to virtual drive
-@app.route('/mount', methods=['POST'])
-def mount_directory():
-    data = request.get_json()
-    username = data.get('username')
-    dir_path = data.get('dir_path')
-
-    # Get user from database
-    user = Authentication.user_database.get_user_from_db(username)
-    if not user:
-        return jsonify({'error': 'User not found'}), 404
-
-    # Create Azure Storage Handler
-    account_url = 'https://saccbox.blob.core.windows.net'
-    container_name = f'virtual-drive-{user.virtual_drive._id}'
-    azure_storage = AzureStorageHandler(account_url, container_name=container_name)
-
-    # Mount directory to virtual drive
-    user.virtual_drive.add_remote(azure_storage)
-    user.virtual_drive.mount_directory(dir_path)
-
-    # Upload contents to Azure Storage
-    user.virtual_drive.upload_contents()
-
-    return jsonify({'message': 'Directory mounted successfully'})
-
-# Route for accessing virtual drive contents
-@app.route('/virtual_drive/<username>/contents', methods=['GET'])
-def get_virtual_drive_contents(username):
-    # Get user from database
-    user = Authentication.user_database.get_user_from_db(username)
-    if not user:
-        return jsonify({'error': 'User not found'}), 404
-
-    # Serialize virtual drive contents to JSON
-    virtual_drive_contents = user.virtual_drive.to_dict()
-    return jsonify(virtual_drive_contents)
-
-class TornadoServer:
-    def __init__(self, flask_app, port):
-        self.flask_app = flask_app
-        self.port = port
-        self.http_server = HTTPServer(WSGIContainer(self.flask_app))
-        self.server_thread = threading.Thread(target=self.start_server)
-        self.server_thread.daemon = False
-        self.server_thread.start()
-
-    def start_server(self):
-        try:
-            logging.info(f"Starting Tornado server on port {self.port}")
-            self.http_server.listen(self.port)
-            IOLoop.instance().start()
-        except Exception as e:
-            logging.error(f"Failed to start Tornado server: {e}")
-
-if __name__ == '__main__':
-    logging.basicConfig(level=logging.ERROR)
-    tornado_server = TornadoServer(app, port=5000)
-```
+   - **Get virtual drive contents:**
+     ```sh
+     curl -X GET http://localhost:5000/virtual_drive/yourusername/contents
+     ```
 
 ### API Server
 
-Here’s an example implementation of an API server using `SocketServer`:
+The API server provides CLI-based interactions with the Virtual Drive Management System.
 
-```python
-import socketserver
-import threading
-import sys
+#### Running the API Server
 
-class ApiRequestHandler(socketserver.StreamRequestHandler):
-    def handle(self):
-        self.wfile.write(b"Welcome to the API Server\n")
-        while True:
-            command = self.rfile.readline().strip().decode('utf-8')
-            if command == 'quit':
-                self.wfile.write(b"Goodbye!\n")
-                break
-            elif command == 'register':
-                self.wfile.write(b"Register command received\n")
-            elif command == 'login':
-                self.wfile.write(b"Login command received\n")
-            else:
-                self.wfile.write(b"Unknown command\n")
+1. Ensure you have the `api_server.py` script ready as provided earlier.
 
-class ApiServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
-    def __init__(self, host, port):
-        self.server_address = (host, port)
-        socketserver.TCPServer.__init__(self, self.server_address, ApiRequestHandler)
-        server_thread = threading.Thread(target=self.serve_forever)
-        server_thread.setDaemon(True)
-        server_thread.start()
+2. Start the API server:
+   ```sh
+   python api_server.py
+   ```
 
-if __name__ == '__main__':
-    host, port = 'localhost', 9999
-    server = ApiServer(host, port)
-    print(f"API server running on {host}:{port}")
-    try:
-        while True:
-            pass
-    except KeyboardInterrupt:
-        print("Shutting down the server.")
-        server.shutdown()
-        server.server_close()
-```
+3. The server will run on `localhost` and port `9999` by default. You can interact with it using a simple TCP client, such as `telnet`:
+
+   ```sh
+   telnet localhost 9999
+   ```
+
+4. Available commands include:
+   - **Register a new user:**
+     ```sh
+     register
+     ```
+     Follow the prompts to enter username and password.
+
+   - **Log in a user:**
+     ```sh
+     login
+     ```
+     Follow the prompts to enter username and password.
+
+   - **Quit the connection:**
+     ```sh
+     quit
+     ```
 
 ### Database Integration
 
@@ -272,14 +182,8 @@ user_db.add_user('testuser', 'testpass')
 print(user_db.user_exists('testuser'))
 ```
 
-## Contributing
-
-We welcome contributions from the community. To contribute, please fork the repository, create a new branch, and submit a pull request. Ensure your code follows the project's coding standards and includes appropriate tests.
-
 ## License
 
 This project is licensed under the MIT License. See the LICENSE file for more details.
 
 ---
-
-This README provides a comprehensive guide for setting up, using, and contributing to your Virtual Drive Management System project. It covers installation, usage of various modules, database integration, and includes examples for both web and API server implementations.
