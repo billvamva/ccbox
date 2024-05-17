@@ -80,6 +80,7 @@ def get_virtual_drive_contents(username):
         virtual_drive_contents = user.virtual_drive.to_dict()
         return jsonify(virtual_drive_contents)
 
+
 class TornadoServer:
         def __init__(self, flask_app, port):
                 self.flask_app = flask_app
@@ -102,4 +103,3 @@ if __name__ == '__main__':
         logging.basicConfig(level=logging.ERROR)
         tornado_server = TornadoServer(app, port=5000)  
 
-        # app.run(debug=True)

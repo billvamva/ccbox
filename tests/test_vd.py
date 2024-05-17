@@ -56,16 +56,4 @@ def test_virtual_drive_to_dict(virtual_drive):
         assert data['_id'] == virtual_drive._id
         assert 'default' in data['folders']
 
-def test_virtual_drive_add_save_callable_attr(virtual_drive):
-        mock_user = MagicMock()
-        mock_save_method = MagicMock()
-        virtual_drive.add_save_callable_attr(curr_user=mock_user, _save_method=mock_save_method)
-        assert virtual_drive.user_obj == mock_user
-        assert virtual_drive._save_method == mock_save_method
 
-def test_virtual_drive_save(virtual_drive):
-        mock_user = MagicMock()
-        mock_save_method = MagicMock()
-        virtual_drive.add_save_callable_attr(curr_user=mock_user, _save_method=mock_save_method)
-        virtual_drive._save()
-        mock_save_method.assert_called_once_with(mock_user)

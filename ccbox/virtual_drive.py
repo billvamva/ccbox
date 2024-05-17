@@ -3,7 +3,7 @@ from dataclasses import dataclass, field
 from itertools import count
 import os
 
-from ccbox.storage_handler import StorageHandler
+from ccbox.storage_handler import StorageHandler, AzureStorageHandler
 from ccbox.helper import NamedTextIOWrapper
 
 @dataclass
@@ -71,14 +71,14 @@ class FileSystemObject:
         
         @classmethod
         def from_dict(cls, data: dict) -> "FileSystemObject":
-                obj = cls(name=data["_name"])
+                obj = cls(_name=data["_name"])
                 obj.contents = [Folder.from_dict(f) if isinstance(f, dict) else f for f in data["contents"]]
                 obj.folders = {name: Folder.from_dict(f) for name, f in data["folders"].items()}
                 obj.metadata = data["metadata"]
                 return obj
 
         def __repr__(self):
-                return f'FSO(\'{self._name}\', {self.folders}, {self.metadata})'
+                return f'{type(self).__name__}(\'{self._name}\', {self.folders}, {super.contents}, {self.metadata})'
 
 @dataclass(kw_only=True)
 class Folder(FileSystemObject):
@@ -99,7 +99,7 @@ class Folder(FileSystemObject):
         @classmethod
         def from_dict(cls, data: dict, parent_dir=None) -> "Folder":
                 folder = Folder(_name=data["_name"], parent_dir=parent_dir)
-                folder.contents = [cls.from_dict(datal=f, parent_dir=folder) if isinstance(f, dict) else f for f in data["contents"]]
+                folder.contents = [cls.from_dict(data=f, parent_dir=folder) if isinstance(f, dict) else f for f in data["contents"]]
                 folder.folders = {name: cls.from_dict(data=f, parent_dir=folder) for name, f in data["folders"].items()}
                 folder.metadata = data["metadata"]
                 return folder
@@ -112,8 +112,6 @@ class Virtual_Drive(FileSystemObject):
         id_counter: count = count()
         _id: int =  field(default_factory=lambda: next(Virtual_Drive.id_counter))
         _from_dict: bool = False
-        user_obj: "User" = None
-        _save_method: Callable = None
         storage_handler: StorageHandler = None
 
         def __post_init__(self):
@@ -186,17 +184,18 @@ class Virtual_Drive(FileSystemObject):
         def to_dict(self) -> dict:
                 return {
                 "_id": self._id,
+                "_name": self._name,
                 "folders": {name: f.to_dict() for name, f in self.folders.items()},
                 "contents": [f.to_dict() if isinstance(f, Folder) else str(f) for f in self.contents],
+                "metadata": self.metadata,
+                "storage_handler": self.storage_handler.to_dict()
                 }
         
-        def __repr__(self):
-                return f'Virtual Drive(\'{self._id}\', {self.folders})'
-
-        # to rework
-        def add_save_callable_attr(self, curr_user: "User", _save_method: Callable) -> None:
-                self.user_obj = curr_user
-                self._save_method = _save_method
-        
-        def _save(self):
-                self._save_method(self.user_obj)
+        @classmethod
+        def from_dict(cls, data:dict) -> "Virtual_Drive":
+                obj = super().from_dict(data)
+                obj.add_remote(storage_handler=AzureStorageHandler.from_dict({
+                        "account_url" : data["storage_handler"]["account_url"],
+                        "container_name" : data["storage_handler"]["container_name"]
+                }))
+                return obj

@@ -21,16 +21,13 @@ class User:
                 return {
                 "username": self.username,
                 "_id": self._id,
-                "virtual_drive": self.virtual_drive.to_dict()
+                "virtual_drive_id": self.virtual_drive._id
                 }
         @classmethod
         def from_dict(cls, data: dict) -> 'User':
 
                 user = cls(username=data["username"], _id=data["_id"])
-                user.virtual_drive = Virtual_Drive(_id=data["virtual_drive"]["_id"],  _from_dict=True)
-                folders = {name: Folder.from_dict(data=f, parent_dir=user.virtual_drive) for name, f in data["virtual_drive"]["folders"].items()}
-                for folder_name, folder_obj in folders.items():
-                       user.virtual_drive.add_folder(name=folder_name, folder_obj=folder_obj)
+                user.virtual_drive = Virtual_Drive(_id=data["virtual_drive_id"], _from_dict=True).load_from_remote(f"virtual_drive_{data["virtual_drive_id"]}.json")
                 return user
 
 
@@ -63,7 +60,7 @@ class UserDatabase:
                 CREATE TABLE IF NOT EXISTS users (
                         id INTEGER PRIMARY KEY,
                         username TEXT UNIQUE NOT NULL,
-                        virtual_drive TEXT NOT NULL
+                        virtual_drive_id INTEGER NOT NULL
                 )
                 ''')
                 self.connection.commit()
@@ -73,8 +70,8 @@ class UserDatabase:
                 user_data['virtual_drive'] = json.dumps(user_data['virtual_drive'])
                 try:
                         self.cursor.execute('''
-                                INSERT INTO users (id, username, virtual_drive) VALUES (?, ?, ?)
-                        ''', (user_data['_id'], user_data['username'], user_data['virtual_drive']))
+                                INSERT INTO users (id, username, virtual_drive_id) VALUES (?, ?, ?)
+                        ''', (user_data['_id'], user_data['username'], user_data['virtual_drive_id']))
                         self.connection.commit()
                 except sqlite3.IntegrityError as error:
                         print(error)
@@ -85,26 +82,13 @@ class UserDatabase:
                 ''', (username,))
                 row = self.cursor.fetchone()
                 if row:
-                        virtual_drive_data = json.loads(row[2])
+                        virtual_drive_id = json.loads(row[2])
                         return User.from_dict({
                                 "username": row[1],
                                 "_id": row[0],
-                                "virtual_drive": virtual_drive_data
+                                "virtual_drive_id": virtual_drive_id
                         })
                 return None
         
-        def update_virtual_drive_in_db(self, user_obj: User) -> None:
-                """Update virtual drive value in the database for a specific user."""
-                user_data = user_obj.to_dict()
-                user_data['virtual_drive'] = json.dumps(user_data['virtual_drive'])
-                try:
-                        self.cursor.execute('''
-                                UPDATE users SET virtual_drive = ? WHERE id = ?
-                        ''', (user_data['virtual_drive'], user_data['_id']))
-                        self.connection.commit()
-
-                except sqlite3.IntegrityError as error:
-                        print(error)
-
         def close(self):
                 self.connection.close()
