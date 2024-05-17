@@ -49,7 +49,7 @@ def mount_directory():
         dir_path = data.get('dir_path')
         
         # Get user from database
-        user = user_database.get_user_from_db(username)
+        user = Authentication.user_database.get_user_from_db(username)
         if not user:
                 return jsonify({'error': 'User not found'}), 404
         
@@ -71,7 +71,7 @@ def mount_directory():
 @app.route('/virtual_drive/<username>/contents', methods=['GET'])
 def get_virtual_drive_contents(username):
         # Get user from database
-        user = user_database.get_user_from_db(username)
+        user = Authentication.user_database.get_user_from_db(username)
         if not user:
                 return jsonify({'error': 'User not found'}), 404
         

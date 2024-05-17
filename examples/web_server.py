@@ -3,7 +3,7 @@ import requests
 
 
 register_data = {
-    'username': 'example_user',
+    'username': 'example_user2',
     'password': 'example_password'
 }
 response = requests.post('http://localhost:5000/register', json=register_data)
@@ -20,7 +20,7 @@ print(response.json())  # Output: {'message': 'Login successful'}
 # Mount a directory to the virtual drive
 mount_data = {
     'username': 'example_user',
-    'dir_path': '/path/to/directory'
+    'dir_path': '/Users/vasvamva1/Documents/ccbox/data/mnt'
 }
 response = requests.post('http://localhost:5000/mount', json=mount_data)
 print(response.json())  # Output: {'message': 'Directory mounted successfully'}

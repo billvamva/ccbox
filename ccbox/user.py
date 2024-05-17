@@ -30,7 +30,7 @@ class User:
                 user.virtual_drive = Virtual_Drive(_id=data["virtual_drive"]["_id"],  _from_dict=True)
                 folders = {name: Folder.from_dict(data=f, parent_dir=user.virtual_drive) for name, f in data["virtual_drive"]["folders"].items()}
                 for folder_name, folder_obj in folders.items():
-                       user.virtual_drive.add_folder(_name=folder_name, folder_obj=folder_obj)
+                       user.virtual_drive.add_folder(name=folder_name, folder_obj=folder_obj)
                 return user
 
 
@@ -39,7 +39,7 @@ class UserDatabase:
         
         def __init__(self, db_path: str):
                 self.db_path = db_path
-                self.connection = sqlite3.connect(self.db_path)
+                self.connection = sqlite3.connect(self.db_path, check_same_thread=False)
                 self.cursor = self.connection.cursor()
                 self._create_tables()
                 self._initialize_counters()

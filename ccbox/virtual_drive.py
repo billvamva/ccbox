@@ -63,7 +63,7 @@ class FileSystemObject:
 
         def to_dict(self) -> dict:
                 return {
-                "name": self._name,
+                "_name": self._name,
                 "folders": {name: f.to_dict() for name, f in self.folders.items()},
                 "contents": [f.to_dict() if isinstance(f, Folder) else str(f) for f in self.contents],
                 "metadata": self.metadata
@@ -98,7 +98,7 @@ class Folder(FileSystemObject):
 
         @classmethod
         def from_dict(cls, data: dict, parent_dir=None) -> "Folder":
-                folder = Folder(name=data["_name"], parent_dir=parent_dir)
+                folder = Folder(_name=data["_name"], parent_dir=parent_dir)
                 folder.contents = [cls.from_dict(datal=f, parent_dir=folder) if isinstance(f, dict) else f for f in data["contents"]]
                 folder.folders = {name: cls.from_dict(data=f, parent_dir=folder) for name, f in data["folders"].items()}
                 folder.metadata = data["metadata"]
