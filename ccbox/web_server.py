@@ -3,6 +3,7 @@ from tornado.wsgi import WSGIContainer
 from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop
 import threading
+import logging
 
 from ccbox.virtual_drive import Virtual_Drive, Folder
 from ccbox.user import User, UserDatabase
@@ -80,19 +81,25 @@ def get_virtual_drive_contents(username):
         return jsonify(virtual_drive_contents)
 
 class TornadoServer:
-    def __init__(self, flask_app, port):
-        self.flask_app = flask_app
-        self.port = port
-        self.http_server = HTTPServer(WSGIContainer(self.flask_app))
-        self.server_thread = threading.Thread(target=self.start_server)
-        self.server_thread.daemon = True
-        self.server_thread.start()
+        def __init__(self, flask_app, port):
+                self.flask_app = flask_app
+                self.port = port
+                self.http_server = HTTPServer(WSGIContainer(self.flask_app))
+                self.server_thread = threading.Thread(target=self.start_server)
+                self.server_thread.daemon = False
+                self.server_thread.start()
 
-    def start_server(self):
-        self.http_server.listen(self.port)
-        IOLoop.instance().start()
+        def start_server(self):
+                try:
+                        logging.info(f"Starting Tornado server on port {self.port}")
+                        self.http_server.listen(self.port)
+                        IOLoop.instance().start()
+                except Exception as e:
+                        logging.error(f"Failed to start Tornado server: {e}")
 
 
 if __name__ == '__main__':
-        # tornado_server = TornadoServer(app, port=8888)  
-        app.run(debug=True)
+        logging.basicConfig(level=logging.ERROR)
+        tornado_server = TornadoServer(app, port=5000)  
+
+        # app.run(debug=True)
