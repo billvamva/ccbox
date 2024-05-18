@@ -32,6 +32,11 @@ This project is a Virtual Drive Management System that allows users to register,
    pip install -r requirements.txt
    ```
 
+3. Install teh module:
+   ```sh
+   python install .
+   ```
+
 ## Usage
 
 ### Authentication
@@ -118,10 +123,10 @@ The API server provides CLI-based interactions with the Virtual Drive Management
    python api_server.py
    ```
 
-3. The server will run on `localhost` and port `9999` by default. You can interact with it using a simple TCP client, such as `telnet`:
+3. The server will run on `localhost` and port `9999` by default. The setup.py scirpt has an entry point to the cli.py file so you will be able to run the commands from your command line interface.:
 
    ```sh
-   telnet localhost 9999
+   ccbox
    ```
 
 4. Available commands include:
@@ -136,6 +141,12 @@ The API server provides CLI-based interactions with the Virtual Drive Management
      login
      ```
      Follow the prompts to enter username and password.
+   
+   - **Mount:**
+     ```sh
+     mount
+     ```
+     Follow the prompts to enter the mounted directory's path.
 
    - **Quit the connection:**
      ```sh
@@ -144,7 +155,7 @@ The API server provides CLI-based interactions with the Virtual Drive Management
 
 ### Database Integration
 
-The application uses SQLite for database integration. Here is an example of user database interaction:
+The application uses SQLite for database integration. Here is an example of user database interaction. Currently there is not threading implementation:
 
 ```python
 import sqlite3

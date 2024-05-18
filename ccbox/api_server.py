@@ -1,15 +1,15 @@
 import sys
 import threading
-import SocketServer
+import socketserver
 from datetime import date
 from ccbox.virtual_drive import Virtual_Drive, Folder
 from ccbox.user import User, UserDatabase
 from ccbox.authentication import Authentication
 from ccbox.storage_handler import AzureStorageHandler
-import log
+from ccbox.log import Logger
 
 
-class ApiRequestHandler(SocketServer.StreamRequestHandler):
+class ApiRequestHandler(socketserver.StreamRequestHandler):
         """
         The request handler for our API server.
         """
@@ -25,7 +25,7 @@ class ApiRequestHandler(SocketServer.StreamRequestHandler):
         )
 
         def setup(self):
-                SocketServer.StreamRequestHandler.setup(self)
+                socketserver.StreamRequestHandler.setup(self)
                 self._logger = Logger()
                 self._logger.info("Client connected")
 
@@ -114,30 +114,31 @@ class ApiRequestHandler(SocketServer.StreamRequestHandler):
                 return f"{virtual_drive_contents}\n\r"
 
         def finish(self):
-                SocketServer.StreamRequestHandler.finish(self)
+                socketserver.StreamRequestHandler.finish(self)
                 self._logger.info("Client disconnected")
 
 
-class ApiServer(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
+class ApiServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
     """
     This class implements the API server.
     """
 
     def __init__(self, host, port):
-        self._logger = log.Logger()
+        self._logger = Logger()
 
         self.server_address = (host, port)
-        SocketServer.TCPServer.__init__(self, self.server_address, ApiRequestHandler)
+        socketserver.TCPServer.__init__(self, self.server_address, ApiRequestHandler)
 
         # Start a thread with the server -- that thread will start one
         # more thread for each request
         server_thread = threading.Thread(target=self.serve_forever)
         # Exit the server thread when the main thread terminates
-        server_thread.daemon = False
+        server_thread.daemon = True
         server_thread.start()
 
         self._logger.info("API server listening on " + host + ", " + str(port))
 
 
 if __name__ == '__main__':
-    ApiServer(None, 'localhost', 6000)
+        api_server = ApiServer('localhost', 9999)
+        api_server.serve_forever()
