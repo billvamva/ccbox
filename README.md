@@ -132,25 +132,25 @@ The API server provides CLI-based interactions with the Virtual Drive Management
 4. Available commands include:
    - **Register a new user:**
      ```sh
-     register
+     ccbox register --username <username> --password <password>
      ```
      Follow the prompts to enter username and password.
 
    - **Log in a user:**
      ```sh
-     login
+     ccbox login --username <username> --password <password>
      ```
      Follow the prompts to enter username and password.
    
    - **Mount:**
      ```sh
-     mount
+     ccbox mount --dir <dir_path>
      ```
      Follow the prompts to enter the mounted directory's path.
 
    - **Quit the connection:**
      ```sh
-     quit
+     ccbox quit
      ```
 
 ### Database Integration
