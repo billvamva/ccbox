@@ -31,7 +31,11 @@ def main():
         
         # Mount command
         mount_parser = subparsers.add_parser('mount', help='Mount Directory')
+        mount_parser.add_argument('--username', type=str, required=True, help='Username')
         mount_parser.add_argument('--dir', type=str, required=True, help='Directory to mount')
+        
+        content_parser = subparsers.add_parser('contents', help='View Contents of Current Directory')
+        content_parser.add_argument('--username', type=str, required=True, help='Username')
 
         # Other commands
         subparsers.add_parser('quit', help='Close connection')
@@ -39,7 +43,6 @@ def main():
         subparsers.add_parser('version', help='Prints the version')
         subparsers.add_parser('about', help='Prints a short description')
         subparsers.add_parser('help', help='Shows all available commands')
-        subparsers.add_parser('contents', help='View Contents of Current Directory')
 
         args = parser.parse_args()
 

@@ -144,7 +144,13 @@ The API server provides CLI-based interactions with the Virtual Drive Management
    
    - **Mount:**
      ```sh
-     ccbox mount --dir <dir_path>
+     ccbox mount --username <username> --dir <dir_path>
+     ```
+     Follow the prompts to enter the mounted directory's path.
+   
+   - **Contents:**
+     ```sh
+     ccbox contents --username <username> 
      ```
      Follow the prompts to enter the mounted directory's path.
 
