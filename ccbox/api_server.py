@@ -36,39 +36,45 @@ class ApiRequestHandler(socketserver.StreamRequestHandler):
                 self.wfile.write(welcome_message.encode('utf-8'))
 
                 while True:
-                        command = self.rfile.readline().strip().decode('utf-8').lower()
-                        if command:
-                                self.execute_command(command)
+                        try:
+                                command = self.rfile.readline().strip().decode('utf-8').lower()
+                                if command:
+                                        self.execute_command(command)
+                        except Exception as e:
+                                print(f"Error: {e}")
 
         def execute_command(self, command):
                 parts = command.split()
                 cmd = parts[0]
 
-                if cmd == 'quit':
-                        self.wfile.write("Closing connection. Hope to see you again!\n\r".encode('utf-8'))
-                        return
-                elif cmd == 'exit':
-                        sys.exit(2)
-                elif cmd == 'help':
-                        self.wfile.write(self.help_message.encode('utf-8'))
-                elif cmd == 'register' and len(parts) == 3:
-                        username, password = parts[1], parts[2]
-                        response = self.register_user(username, password)
-                        self.wfile.write(response.encode('utf-8'))
-                elif cmd == 'login' and len(parts) == 3:
-                        username, password = parts[1], parts[2]
-                        response = self.login_user(username, password)
-                        self.wfile.write(response.encode('utf-8'))
-                elif cmd == 'mount' and len(parts) == 3:
-                        username, dir_path = parts[1], parts[2]
-                        response = self.mount_directory(username, dir_path)
-                        self.wfile.write(response.encode('utf-8'))
-                elif cmd == 'contents' and len(parts) == 2:
-                        username = parts[1]
-                        response = self.get_virtual_drive_contents(username)
-                        self.wfile.write(response.encode('utf-8'))
-                else:
-                        self.wfile.write("Invalid command\n\r".encode('utf-8'))
+                try:
+                        if cmd == 'quit':
+                                self.wfile.write("Closing connection. Hope to see you again!\n\r".encode('utf-8'))
+                                return
+                        elif cmd == 'exit':
+                                sys.exit(2)
+                        elif cmd == 'help':
+                                self.wfile.write(self.help_message.encode('utf-8'))
+                        elif cmd == 'register' and len(parts) == 3:
+                                username, password = parts[1], parts[2]
+                                response = self.register_user(username, password)
+                                self.wfile.write(response.encode('utf-8'))
+                        elif cmd == 'login' and len(parts) == 3:
+                                username, password = parts[1], parts[2]
+                                response = self.login_user(username, password)
+                                self.wfile.write(response.encode('utf-8'))
+                        elif cmd == 'mount' and len(parts) == 3:
+                                username, dir_path = parts[1], parts[2]
+                                response = self.mount_directory(username, dir_path)
+                                self.wfile.write(response.encode('utf-8'))
+                        elif cmd == 'contents' and len(parts) == 2:
+                                username = parts[1]
+                                response = self.get_virtual_drive_contents(username)
+                                self.wfile.write(response.encode('utf-8'))
+                        else:
+                                self.wfile.write("Invalid command\n\r".encode('utf-8'))
+                except ConnectionResetError:
+                        self._logger.error("Broken pipe: client disconnected while sending response")
 
         def register_user(self, username, password):
                 if not username or not password:
@@ -94,6 +100,8 @@ class ApiRequestHandler(socketserver.StreamRequestHandler):
                 user = Authentication.user_database.get_user_from_db(username)
                 if not user:
                         return "User not found\n\r"
+                
+                print(user.username)
 
                 account_url = 'https://saccbox.blob.core.windows.net'
                 container_name = f'virtual-drive-{user.virtual_drive._id}'

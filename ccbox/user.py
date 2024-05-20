@@ -47,7 +47,7 @@ class UserDatabase:
                 if max_user_id is None:
                         max_user_id = 0
 
-                self.cursor.execute('SELECT MAX(json_extract(virtual_drive, "$._id")) FROM users')
+                self.cursor.execute('SELECT MAX(virtual_drive_id) FROM users')
                 max_drive_id = self.cursor.fetchone()[0]
                 if max_drive_id is None:
                         max_drive_id = 0
@@ -67,7 +67,6 @@ class UserDatabase:
 
         def add_user_to_db(self, user_obj: User) -> None:
                 user_data = user_obj.to_dict()
-                user_data['virtual_drive'] = json.dumps(user_data['virtual_drive'])
                 try:
                         self.cursor.execute('''
                                 INSERT INTO users (id, username, virtual_drive_id) VALUES (?, ?, ?)
@@ -82,7 +81,7 @@ class UserDatabase:
                 ''', (username,))
                 row = self.cursor.fetchone()
                 if row:
-                        virtual_drive_id = json.loads(row[2])
+                        virtual_drive_id = row[2]
                         return User.from_dict({
                                 "username": row[1],
                                 "_id": row[0],

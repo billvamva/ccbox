@@ -35,7 +35,7 @@ def main():
     # Mount command
     mount_parser = subparsers.add_parser('mount', help='Mount a directory to the virtual drive')
     mount_parser.add_argument('username', type=str, help='Username of the user')
-    mount_parser.add_argument('dir_path', type=str, help='Path of the directory to mount')
+    mount_parser.add_argument('dir', type=str, help='Path of the directory to mount')
 
     # Contents command
     contents_parser = subparsers.add_parser('contents', help='Get the contents of the virtual drive')
@@ -48,7 +48,7 @@ def main():
     elif args.command == 'login':
         send_command(f"login {args.username} {args.password}")
     elif args.command == 'mount':
-        send_command(f"mount {args.username} {args.dir_path}")
+        send_command(f"mount {args.username} {args.dir}")
     elif args.command == 'contents':
         send_command(f"contents {args.username}")
     else:
